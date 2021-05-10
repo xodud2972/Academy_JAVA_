@@ -1,21 +1,8 @@
-
-public class AccountingClassApp {
-
-	public static double valueOfSupply; // 전역변수로 지정
-	public static double vatRate; // getVAT메소드를 위해서 전역변수로 지정 
-	public static double expenseRate;
-	
-	public static void main(String[] args) {
-		
-		valueOfSupply = 10000.0;
-		vatRate = 0.1;
-		expenseRate = 0.3;		
-		print();
-		// anotherVariable = ...;
-		// anotherMethod = ...;
-	}
-
-	private static void print() {
+class Accounting{
+	public double valueOfSupply; // 전역변수로 지정
+	public double vatRate; // getVAT메소드를 위해서 전역변수로 지정 
+	public double expenseRate;
+	public void print() {
 		System.out.println("Value of supply : "+valueOfSupply);
 		System.out.println("VAT : "+ getVAT()	);
 		System.out.println("Total : "+ getTotal()		);
@@ -26,32 +13,49 @@ public class AccountingClassApp {
 		System.out.println("Dividend : "+ getDividend3()	);
 	}
 
- static double getDividend3( ) {
+ public double getDividend3( ) {
 		return getIncome() * 0.2;
 	}
 
- static double getDividend2( ) {
+ public double getDividend2( ) {
 		return getIncome() * 0.3;
 	}
 
- static double getDividend1( ) {
+ public double getDividend1( ) {
 		return getIncome() * 0.5;
 	}
 
-	private static double getIncome( ) {
+ public double getIncome( ) {
 		return valueOfSupply - getExpense();
 	}
 
-	private static double getExpense() {
+ public double getExpense() {
 		return valueOfSupply * expenseRate;
 	}
 
-	private static double getTotal() {
+ public double getTotal() {
 		return valueOfSupply + getVAT();
 	}
 
-	private static double getVAT() {
+ public double getVAT() {
 		return valueOfSupply * vatRate;
 	}
+}
+public class AccountingClassApp {
 
+	public static void main(String[] args) {
+		//instance
+		Accounting a1 = new Accounting();
+		a1.valueOfSupply = 10000.0;
+		a1.vatRate = 0.1;
+		a1.expenseRate = 0.3;
+		a1.print();
+		
+		Accounting a2=  new Accounting();
+		a2.valueOfSupply = 20000.0;
+		a2.vatRate = 0.05;
+		a2.expenseRate = 0.2;
+		a2.print();
+
+	}
 }
