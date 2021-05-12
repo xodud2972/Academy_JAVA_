@@ -5,11 +5,15 @@ import java.awt.Image;
 
 import javax.swing.JPanel;
 
+import app0512.Graphic.Gallery;
+import app0512.Graphic.PhotoAlbum;
+
 public class DetailView extends JPanel{
+	PhotoAlbum photoAlbum;
 	Image image;
 	
-	public DetailView() {
-		this.image = image;
+	public DetailView(PhotoAlbum photoAlbum) {
+		this.photoAlbum = photoAlbum;
 	}
 	// 클릭시 마다 넘겨받을 이미지 처리..
 	public void setImage(Image image) {
