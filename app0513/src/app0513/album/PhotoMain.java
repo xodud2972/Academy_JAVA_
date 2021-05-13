@@ -3,6 +3,7 @@ package app0513.album;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Image;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -10,7 +11,7 @@ import javax.swing.JPanel;
 public class PhotoMain extends JFrame{
 	JPanel p_north; //북쪽의 썸네일을 붙일 패널 
 	XCanvas can; //큰 이미지를 그릴 켄버스
-	String dir="D:\\korea202102_javaworkspace\\app0513\\res\\images\\";
+	String dir="D:/workspace/korea202102_javaworkspace/app0513/res/images/";
 	String[] pathArray= {"1.jpg", "2.jpg","3.jpg","4.jpg","5.jpg","6.jpg","7.jpg","8.jpg","9.jpg","10.jpg"};
 	ThumbPanel[] thumbArray=new ThumbPanel[pathArray.length];
 	
