@@ -32,7 +32,7 @@ public class MemoEditor extends JFrame{
 		//생성
 		bar = new JMenuBar();
 		m_file 		= new JMenu("파일");
-		item_new 	= new JMenuItem("새파일"); 
+		item_new 	= new JMenuItem("새파일");
 		item_open 	= new JMenuItem("열기");
 		item_save 	= new JMenuItem("저장");
 		item_saveas = new JMenuItem("새이름으로 저장");
@@ -149,4 +149,11 @@ public class MemoEditor extends JFrame{
 		new MemoEditor();
 	}
 }
+
+
+
+
+
+
+
 
