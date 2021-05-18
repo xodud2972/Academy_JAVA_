@@ -8,9 +8,9 @@ import java.sql.ResultSet;
 class TestOracle{
 
 	public static void main(String[] args){
-		String url="오라클용"; //정해진 문자열 형식!! 암기
-		String user="root";
-		String pass="1234";
+		String url="jdbc:oracle:thin:@localhost:1521:XE"; //정해진 문자열 형식!! 암기
+		String user="javase";
+		String pass="javase";
 
 		Connection con=null; //접속 성공 후, 접속 정보를 가진 객체
 		PreparedStatement pstmt=null; //쿼리문 수행 객체
@@ -24,7 +24,7 @@ class TestOracle{
 		4.DB관련 객체 해제
 		*/
 		try{
-			Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("oracle.jdbc.driver.OracleDriver");
 			System.out.println("드라이버 로드 성공!!");
 
 			con=DriverManager.getConnection(url, user, pass);
