@@ -18,7 +18,7 @@ import javax.swing.JTable;
 public class TableBasic extends JFrame{
 	//JTable의 생성자 중, 레코드는 이차원배열로 지원하고, 컬럼의 제목은 일차원배열로 지원하는 3번째 생성자를 이용해보자!!
 	String[] columns= {"member_id","user_id", "password","name","regdate"};
-	String[][] rows= {}; //생성되지도 않음
+	String[][] rows= {}; //아직 DB연동 전 이므로, 배열의 크기를 알수없기 때문에 임시적으로 비어있는 배열을 선언한것뿐이다
 	JTable table;
 	JScrollPane scroll;
 	
@@ -29,7 +29,7 @@ public class TableBasic extends JFrame{
 	Connection con; //접속 후 그 정보를 가진 객체
 	
 	public TableBasic() {
-		connect();
+		connect(); //JTable이 사용할 이차원배열을 먼저 구해야하므로..
 		
 		table = new JTable(rows, columns); 
 		scroll = new JScrollPane(table);
@@ -37,7 +37,7 @@ public class TableBasic extends JFrame{
 		add(scroll);
 		
 		setVisible(true);
-		setSize(500, 250);
+		setBounds(2400, 100, 500, 250);
 		//setDefaultCloseOperation(EXIT_ON_CLOSE);//자원을 해제시킬 작업이 없기 때문에 이용가능...
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -50,6 +50,7 @@ public class TableBasic extends JFrame{
 				}	
 			}
 		});
+		
 		
 	}
 	//데이터베이스 가져오기
@@ -103,27 +104,23 @@ public class TableBasic extends JFrame{
 			int num = rs.getRow(); //현재의 레코드 순번을 반환받아보자
 			System.out.println("저의 현재 위치는 "+ num);
 			
-			String[][] data = new String[ num ][columns.length];
+			String[][] data = new String[num][columns.length];
 			
-			rs.beforeFirst();
-			
-			int index = 0;
-			while(rs.next()) {
-				// rs의 레코드에 접근하며, empty 상태에 있는 2차원 배열로 데이터를 옮겨보자.
-				data[index][0] = Integer.toString(rs.getInt("member_id")); // int 형을 String 객체형으로 변환 , 이떄 사용되는 객체가 Wrapper
-				data[index][1] = rs.getString("user_id");
-				data[index][2] = rs.getString("password");
-				data[index][3] = rs.getString("name");
-				data[index][4] = rs.getString("regdate");
+			rs.beforeFirst();//last 에 가 있는 rs의 커서를 다시 처음으로 원상복귀 시키자
+			int index=0;
+			while(rs.next()) { //커서 한칸 전진!!
+				//rs의 레코드에 접근하여, empty상태에 있는 2차원 배열로 데이터를 옮겨보자!!!
+				data[index][0]=Integer.toString(rs.getInt("member_id")); // int형을 String 객체형으로 변환!! 이때 사용되는 객체가 바로 Wrapper
+				data[index][1]=rs.getString("user_id");
+				data[index][2]=rs.getString("password");
+				data[index][3]=rs.getString("name");
+				data[index][4]=rs.getString("regdate");
 				index++;
-			}
-			table.setValueAt(data[0][0], 0, 0);
-			table.updateUI(); // 갱신된 데이터를 이용하여 JTable
-			
+			}	
+			rows=data; //JTable이 참조할 예정인 rows의 주소값을 data이차원배열로 대체해버리자!!
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
 	}
 	
 	public static void main(String[] args) {
@@ -131,3 +128,7 @@ public class TableBasic extends JFrame{
 	}
 
 }
+
+
+
+

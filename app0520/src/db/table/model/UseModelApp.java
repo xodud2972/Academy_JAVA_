@@ -50,7 +50,9 @@ public class UseModelApp extends JFrame{
 	String user="root";
 	String password="1234";
 	Connection con;
-	UseModelApp uma = this;
+	UseModelApp uma=this;
+	String value; //현재는 null 이다. 따라서 한번도 레코드를 선택하지 않았다면, 여전히 null로 남아있게 됨..
+	int row; //현재 사용자가 JTable을 마우스로 선택한 레코드의 row
 	
 	public UseModelApp() {
 		table = new JTable(new AbstractTableModel() {
@@ -71,7 +73,7 @@ public class UseModelApp extends JFrame{
 			//row, col 좌표에 어떤 데이터가 있는 반환 하는 메서드, 이 또한 JTable이 호출하는 거다!!
 			//즉 TableModel의 모든 메서드가 다 JTable을 위한 메서드이다!!
 			public Object getValueAt(int row, int col) {
-				System.out.println("getValueAt("+row+", "+col+")");
+				//System.out.println("getValueAt("+row+", "+col+")");
 				return rows[row][col];
 			}
 		}); // 테이블모델 객체 이용가능
@@ -104,19 +106,28 @@ public class UseModelApp extends JFrame{
 		add(area, BorderLayout.SOUTH);
 		add(p_west, BorderLayout.WEST);
 		
+		//등록 버튼과 리스너 연결
 		bt_regist.addActionListener(new ActionListener() {
-			
 			public void actionPerformed(ActionEvent e) {
 				regist();
-				
 			}
 		});
 		
+		//삭제버튼과 리스너 연결
 		bt_del.addActionListener(new ActionListener() {
-			
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showConfirmDialog(uma ,"정말로 삭제 하시겠습니까?");
+				//1번째 방법 - 변수를하나 선언하여 Frame의  인스턴스 주소값을 넣기
+				//JOptionPane.showConfirmDialog(uma , "정말로 삭제하시겠습니까?");
 				
+				//2번째 방법
+				if(value!=null) {
+					int res=JOptionPane.showConfirmDialog(UseModelApp.this , "정말로 삭제하시겠습니까?");
+					if(res==JOptionPane.OK_OPTION) {
+						del();
+					}
+				}else {
+					JOptionPane.showMessageDialog(UseModelApp.this, "삭제하실 회원을 선택하세요");
+				}
 			}
 		});
 		
@@ -125,9 +136,9 @@ public class UseModelApp extends JFrame{
 		table.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
 				//area.append("해당 레코드 클릭햇어?\n");
-				int row = table.getSelectedRow();
+				row = table.getSelectedRow();
 				int col = table.getSelectedColumn();
-				String value = (String)table.getValueAt(row, col);
+				value = (String)table.getValueAt(row, col);
 				//area.setText("당신이 선택한 위치는 "+row+", "+col+" 그리고 그 좌표에 들어있는 데이터 값은 "+value);
 				area.setText("");//출력전에 초기화
 				area.append("member_id : "+table.getValueAt(row, 0)+"\n");
@@ -154,7 +165,7 @@ public class UseModelApp extends JFrame{
 			}
 		});
 		
-		setSize(800,400);
+		setBounds(2400, 100, 800,400);
 		setVisible(true);
 		
 		connect();
@@ -227,41 +238,73 @@ public class UseModelApp extends JFrame{
 		}
 		
 	}
-	//등록
+	
+	//등록 
 	public void regist() {
-		PreparedStatement pstmt = null;
+		PreparedStatement pstmt=null;
 		
-		String sql = "insert into member(user_id, password, name) values(?,?,?)";
+		String sql="insert into member(user_id, password, name) values(?,?,?)";
 		try {
 			pstmt = con.prepareStatement(sql);
 			pstmt.setString(1, t_user_id.getText());
 			pstmt.setString(2, new String(t_password.getPassword()));
 			pstmt.setString(3, t_name.getText());
-			int result = pstmt.executeUpdate(); //이 DML에 실행에 의해 영향을 받은 record 수를 반환함.
-			// 따라서 insert의 경우 제대로 수행되었다면 1이 반환되어야 한다.
-			if(result == 1) {
+			int result = pstmt.executeUpdate(); //이  DML에 실행에 의해 영향을 받은 record수 받환함 
+			//따라서 insert의 경우 제대로 수행되었다면 1이 반환되어야 함 
+			if(result==1) {
 				JOptionPane.showMessageDialog(this, "등록 성공");
+				getList();
 			}else {
 				JOptionPane.showMessageDialog(this, "등록 실패");
 			}
-			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally {
-			if (pstmt!=null) {
+			if(pstmt!=null) {
 				try {
 					pstmt.close();
-				}catch(SQLException e) {
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		
+	}
+	
+	//삭제
+	public void del() {
+		PreparedStatement pstmt=null;
+		//아래의 경우는 unBoxing 의 예이다
+		//삭제할 레코드의 pk 를 받을 변수  "3" --> 3
+		int member_id=Integer.parseInt((String)table.getValueAt(row, 0));  
+		
+		String sql="delete from member where member_id="+member_id;
+		try {
+			pstmt=con.prepareStatement(sql);
+			int result=pstmt.executeUpdate(); //삭제실행!!
+			if(result>0) {
+				JOptionPane.showMessageDialog(this, "삭제완료");
+				getList(); //리스트 갱신
+			}else {
+				JOptionPane.showMessageDialog(this, "삭제실패");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			if(pstmt!=null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 			}
 		}
 	}
 	
-	//삭제
-	public void del() {
-		
-	}
+	
+	
+	
 	public static void main(String[] args) {
 		new UseModelApp();
 
