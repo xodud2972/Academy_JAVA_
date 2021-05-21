@@ -21,6 +21,7 @@ import javax.swing.JTextField;
 
 import com.minssam.shoppingapp.main.AppMain;
 import com.minssam.shoppingapp.main.Page;
+import com.minssam.shoppingapp.model.domain.Topcategory;
 
 //상품관리 메인 페이지
 public class ProductMain extends Page{
@@ -40,8 +41,7 @@ public class ProductMain extends Page{
 	
 	//Choice 컴포넌트는 html의 option  과 달리 텍스트,value 값을 동시에 담을 수 없다..
 	//따라서 우리가 이 부분을 복합 데이터 형태로 직접 만들어서 해결해보자!!
-	ArrayList topList=new ArrayList(); //size 0 즉 아무것도 채워진게 없다
-	
+	ArrayList<Topcategory> topList=new ArrayList<Topcategory>(); //size 0 즉 아무것도 채워진게 없다
 	
 	//센터관련 
 	JPanel p_center;
@@ -172,7 +172,18 @@ public class ProductMain extends Page{
 		//리스너 연결 
 		ch_top.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				getSubList();
+				//지금 선택한 상위카테고리의 pk값을 알아 맞추려면???
+				Choice ch=(Choice)e.getSource();
+				
+				System.out.println("당신이 선택한 아이템은 "+ch.getSelectedIndex()+" 번째 입니다");
+				
+				//유저가 현재 선택한 Choice에서의 아이템을 이용하여 ArrayList의 객체를 꺼내자!! 
+				int index = ch.getSelectedIndex()-1; 
+				Topcategory topcategory=topList.get(index);//topList에서 VO 한개 꺼내기!!
+				System.out.println("선택하신 아이템의 정보 topcategory_id="+topcategory.getTopcategory_id());
+				System.out.println("선택하신 아이템의 정보 top_name="+topcategory.getTop_name());
+				
+				getSubList(topcategory.getTopcategory_id()); 
 			}
 		});
 		
@@ -190,9 +201,17 @@ public class ProductMain extends Page{
 			pstmt=this.getAppMain().getCon().prepareStatement(sql);
 			rs=pstmt.executeQuery();//select 실행 후 레코드 반환
 			
+			ch_top.add("Choose Category");
+			
 			while(rs.next()){//커서한칸씩 이동하면서 true인 동안..
 				ch_top.add(rs.getString("top_name"));
-				topList.add(rs.getString("top_name")); //ArrayList에 아이템 추가!!!
+				
+				//Empty 상태의 인스턴스 한개 생성 , 이 안에 카테고리 이름과  pk을 넣어두자!!
+				Topcategory topcategory = new Topcategory();
+				topcategory.setTopcategory_id(rs.getInt("topcategory_id")); //pk
+				topcategory.setTop_name(rs.getString("top_name")); //카테고리 이름
+				
+				topList.add(topcategory); //ArrayList에 아이템 추가!!!
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -200,17 +219,29 @@ public class ProductMain extends Page{
 			getAppMain().release(pstmt, rs);
 		}
 		
-		//확인을 위한 로그 
-		for(int i=0;i<topList.size();i++) {
-			String item = (String)topList.get(i);
-			System.out.println(item);
-		}
 	}
 	
 	//왼쪽영역의 subcategory 나오게 
-	public void getSubList() {
-		int topcategory_id=0;
+	public void getSubList(int topcategory_id) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		String sql="select * from subcategory where topcategory_id="+topcategory_id;
+		
+		try {
+			pstmt = this.getAppMain().getCon().prepareStatement(sql);
+			rs=pstmt.executeQuery();
+			
+			ch_sub.removeAll(); // 기존 아이템 싹 제거
+			
+			ch_sub.add("choose category");
+			while(rs.next()) {
+				ch_sub.add(rs.getString("sub_name"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			this.getAppMain().release(pstmt, rs);
+		}
 		
 		System.out.println(sql);		
 	}

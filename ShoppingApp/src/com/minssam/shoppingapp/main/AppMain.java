@@ -87,7 +87,7 @@ public class AppMain extends JFrame implements ActionListener{
 		}
 		
 		//보여주기
-		setBounds(1900, 10, 1200, 700);
+		setSize(1200, 700);
 		setVisible(true);
 		
 	}
