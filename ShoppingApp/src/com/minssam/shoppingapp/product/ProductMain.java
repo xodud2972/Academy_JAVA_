@@ -5,6 +5,11 @@ import java.awt.Canvas;
 import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.PreparedStatement;
@@ -21,6 +26,7 @@ import javax.swing.JTextField;
 
 import com.minssam.shoppingapp.main.AppMain;
 import com.minssam.shoppingapp.main.Page;
+import com.minssam.shoppingapp.model.domain.Subcategory;
 import com.minssam.shoppingapp.model.domain.Topcategory;
 
 //상품관리 메인 페이지
@@ -42,6 +48,7 @@ public class ProductMain extends Page{
 	//Choice 컴포넌트는 html의 option  과 달리 텍스트,value 값을 동시에 담을 수 없다..
 	//따라서 우리가 이 부분을 복합 데이터 형태로 직접 만들어서 해결해보자!!
 	ArrayList<Topcategory> topList=new ArrayList<Topcategory>(); //size 0 즉 아무것도 채워진게 없다
+	ArrayList<Subcategory> subList=new ArrayList<Subcategory>();
 	
 	//센터관련 
 	JPanel p_center;
@@ -66,6 +73,8 @@ public class ProductMain extends Page{
 	Canvas can2;
 	JButton bt_regist2;
 	
+	Toolkit kit=Toolkit.getDefaultToolkit();
+	Image image; //등록시 미리보기에 사용할 이미지
 	
 	public ProductMain(AppMain appMain) {
 		super(appMain);
@@ -82,7 +91,13 @@ public class ProductMain extends Page{
 		scroll = new JScrollPane(t_detail);
 		bt_web = new JButton("웹에서찾기");
 		bt_file = new JButton("파일찾기");
-		can = new Canvas();
+		can = new Canvas() {
+			//내부익명 클래스는 외부클래스의 멤버(변수,메서드)들을 내것처럼 접근 가능!!
+			public void paint(Graphics g) {
+				g.drawImage(image, 0, 0, 180, 180, can);	
+			}
+		};
+		
 		bt_regist = new JButton("상품등록");
 		
 		//센터 영역 생성 
@@ -115,12 +130,14 @@ public class ProductMain extends Page{
 		Dimension d = new Dimension(180,30); //공통 크기
 		//서쪽 관련
 		p_west.setPreferredSize(new Dimension(200, 700));
-		scroll.setPreferredSize(new Dimension(180, 300));
+		scroll.setPreferredSize(new Dimension(180, 180));
 		ch_top.setPreferredSize(d);
 		ch_sub.setPreferredSize(d);
 		t_product_name.setPreferredSize(d);
 		t_price.setPreferredSize(d);
 		t_brand.setPreferredSize(d);
+		can.setPreferredSize(new Dimension(180, 180));
+		can.setBackground(Color.CYAN);
 		
 		//센터관련 
 		ch_category.setPreferredSize(d);
@@ -187,6 +204,13 @@ public class ProductMain extends Page{
 			}
 		});
 		
+		//파일찾기 버튼과 리스너 연결
+		bt_file.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				image = kit.getImage("D:\\workspace\\korea202102_jsworkspace\\images\\dog.jpg");
+				can.repaint();
+			}
+		}); 
 		
 		getTopList();
 	}
@@ -223,27 +247,34 @@ public class ProductMain extends Page{
 	
 	//왼쪽영역의 subcategory 나오게 
 	public void getSubList(int topcategory_id) {
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
+		PreparedStatement pstmt=null;
+		ResultSet rs=null;
 		String sql="select * from subcategory where topcategory_id="+topcategory_id;
 		
 		try {
-			pstmt = this.getAppMain().getCon().prepareStatement(sql);
+			pstmt=this.getAppMain().getCon().prepareStatement(sql);
 			rs=pstmt.executeQuery();
 			
-			ch_sub.removeAll(); // 기존 아이템 싹 제거
+			ch_sub.removeAll();//기존 아이템 싹!!! 제거 
+			subList.removeAll(subList); //ArrayList 의 요소 모두 삭제
 			
 			ch_sub.add("choose category");
 			while(rs.next()) {
+				Subcategory subcategory = new Subcategory();//empty
+				subcategory.setSubcategory_id(rs.getInt("subcategory_id")); //pk
+				subcategory.setTopcategory_id(rs.getInt("topcategory_id"));//fk
+				subcategory.setSub_name(rs.getString("sub_name")); //카테고리명
+
+				subList.add(subcategory);//완성된 VO를 ArrayList에 추가하자!! 
 				ch_sub.add(rs.getString("sub_name"));
 			}
+			System.out.println("현재 누적된 서브카테고리 목록은 "+subList.size());
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}finally {
+		} finally {
 			this.getAppMain().release(pstmt, rs);
 		}
-		
-		System.out.println(sql);		
 	}
 	
 }
