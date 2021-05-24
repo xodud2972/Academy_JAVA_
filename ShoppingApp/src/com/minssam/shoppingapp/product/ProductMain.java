@@ -12,12 +12,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -28,6 +39,7 @@ import com.minssam.shoppingapp.main.AppMain;
 import com.minssam.shoppingapp.main.Page;
 import com.minssam.shoppingapp.model.domain.Subcategory;
 import com.minssam.shoppingapp.model.domain.Topcategory;
+import com.minssam.shoppingapp.util.FileManager;
 
 //상품관리 메인 페이지
 public class ProductMain extends Page{
@@ -73,6 +85,7 @@ public class ProductMain extends Page{
 	Canvas can2;
 	JButton bt_regist2;
 	
+	JFileChooser chooser;
 	Toolkit kit=Toolkit.getDefaultToolkit();
 	Image image; //등록시 미리보기에 사용할 이미지
 	
@@ -117,11 +130,13 @@ public class ProductMain extends Page{
 		t_price2 = new JTextField();
 		t_brand2 = new JTextField();
 		t_detail2 = new JTextArea();
-		scroll2 = new JScrollPane(t_detail);
+		scroll2 = new JScrollPane(t_detail2);
 		bt_web2 = new JButton("웹에서찾기");
 		bt_file2 = new JButton("파일찾기");
 		can2 = new Canvas();
 		bt_regist2 = new JButton("상품등록");
+		
+		chooser = new JFileChooser("D:\\korea202102_javaworkspace\\images");
 		
 		
 		//스타일 및 레이아웃 
@@ -204,13 +219,25 @@ public class ProductMain extends Page{
 			}
 		});
 		
+		//웹에서 파일 찾기 버튼과 리스너 연결 
+		bt_web.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				findWeb();
+			}
+		});
+		
 		//파일찾기 버튼과 리스너 연결
 		bt_file.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				image = kit.getImage("D:\\workspace\\korea202102_jsworkspace\\images\\dog.jpg");
-				can.repaint();
+				findLocal();
 			}
 		}); 
+		
+		bt_regist.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				regist();
+			}
+		});
 		
 		getTopList();
 	}
@@ -277,20 +304,123 @@ public class ProductMain extends Page{
 		}
 	}
 	
+	//웹에서 파일 찾아서 이미지 미리보기 구현 
+	public void findWeb() {
+		String path=JOptionPane.showInputDialog(this.getAppMain(),"경로 입력");
+		
+		//위의 경로를 이용하여, 웹서버에 요청을 시도해본다!! 
+		//HttpURLConnection !!!!
+		URL url=null;
+		HttpURLConnection httpCon=null;
+		InputStream is=null; //입력스트림 계열의 최상위 객체
+		FileOutputStream fos=null; //파일을 대상으로 한 출력스트림
+		
+		try {
+			url=new URL(path);
+			httpCon=(HttpURLConnection)url.openConnection();
+			httpCon.setRequestMethod("GET");
+			
+			is=httpCon.getInputStream();//웹서버로의 요청에 연결된 스트림 얻기!!
+			long time=System.currentTimeMillis();
+			String filename=time+"."+FileManager.getExtend(path, "/");
+			fos = new FileOutputStream("D:\\korea202102_javaworkspace\\ShoppingApp\\data\\"+filename);
+			
+			int data=-1;
+			//byte[] b = new byte[1024*1024]; //1M
+			while(true) {
+				data=is.read();
+				if(data==-1)break;
+				fos.write(data);
+			}
+			
+			JOptionPane.showMessageDialog(this.getAppMain(), "복사완료");
+			
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}finally {
+			if(fos!=null) {
+				try {
+					fos.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if(is!=null) {
+				try {
+					is.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+	}
+	
+	//로컬 시스템에서 파일 찾아서 이미지 미리 보기 구현 
+	public void findLocal() {
+		FileInputStream fis=null;
+		FileOutputStream fos=null;
+		
+		if(chooser.showOpenDialog(this.getAppMain())==JFileChooser.APPROVE_OPTION) {
+			File file=chooser.getSelectedFile();
+			
+			image = kit.getImage(file.getAbsolutePath()); //파일의 물리적 풀 경로
+			can.repaint();
+			
+			//유저가 선택한 파일을 data 디렉토리에 복사해보자~~
+			try {
+				fis = new FileInputStream(file);
+				long time = System.currentTimeMillis();
+				String filename = time+"."+FileManager.getExtend(file.getAbsolutePath(), "\\");
+				fos = new FileOutputStream("D:\\korea202102_javaworkspace\\ShoppingApp\\data\\"+filename); //복사될 경로
+				
+				//입력과 출력스트림이 준비되었으므로, 복사를 시작하자!!!
+				int data=-1; 
+				byte[] buff = new byte[1024]; //1kbyte 의 버퍼확보
+				while(true) {
+					data=fis.read(buff); //버퍼로 읽었다면,
+					if(data==-1)break;
+					fos.write(buff);//버퍼로 내려쓰자
+				}
+				JOptionPane.showMessageDialog(this.getAppMain(), "복사완료");
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}finally {
+				if(fos!=null) {
+					try {
+						fos.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				if(fis!=null) {
+					try {
+						fis.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}			
+			}
+			
+		};
+	}
+
+	
+	
+	public void regist() {
+		String sql="insert into product(subcategory_id, product_name, price, brand, detail, filename)";
+		sql+=" values(?,?,?,?,?,?)";
+		int index= ch_sub.getSelectedIndex()-1;
+		
+		//얻어진 초이스 컴포넌트의 index를 이용하여, VO가 들어있는 ArrayList의 접근해보자!!
+		Subcategory subcategory=subList.get(index);
+		System.out.println("당신이 등록하려는 상품의 subcategory_id 는 "+ subcategory.getSubcategory_id());
+		
+		
+	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
