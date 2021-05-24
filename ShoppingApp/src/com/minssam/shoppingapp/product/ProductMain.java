@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,6 +36,11 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
+
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.minssam.shoppingapp.main.AppMain;
 import com.minssam.shoppingapp.main.Page;
@@ -69,6 +75,8 @@ public class ProductMain extends Page{
 	Choice ch_category;//검색 카테고리 선택
 	JTextField t_keyword;//검색어 입력
 	JButton bt_search; 
+	JButton bt_excel; //엑셀을 이용한 일괄등록
+	
 	JTable table;
 	JScrollPane scroll_table;
 	
@@ -123,13 +131,16 @@ public class ProductMain extends Page{
 		p_search = new JPanel();
 		ch_category = new Choice();
 		
-		// 검색 카테고리 등록
+		//검색 카테고리 등록
+		ch_category.add("choose category");
 		ch_category.add("product_name");
 		ch_category.add("price");
 		ch_category.add("brand");
 		
 		t_keyword = new JTextField();
 		bt_search = new JButton("search");
+		bt_excel = new JButton("엑셀로 등록");
+		
 		table = new JTable(new AbstractTableModel() {
 			public int getRowCount() {
 				return records.length;
@@ -182,10 +193,11 @@ public class ProductMain extends Page{
 		
 		//센터관련 
 		ch_category.setPreferredSize(d);
-		t_keyword.setPreferredSize(new Dimension(380, 30));
+		t_keyword.setPreferredSize(new Dimension(300, 30));
 		p_search.add(ch_category);
 		p_search.add(t_keyword);
 		p_search.add(bt_search);
+		p_search.add(bt_excel);
 		p_center.setLayout(new BorderLayout());
 		p_center.add(p_search, BorderLayout.NORTH);//검색 패널을 북쪽에 부착!!
 		p_center.add(scroll_table);
@@ -263,6 +275,13 @@ public class ProductMain extends Page{
 			public void actionPerformed(ActionEvent e) {
 				regist();
 				getProductList();
+			}
+		});
+		
+		//엑셀버튼과 리스너 연결 
+		bt_excel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				registByExcel();
 			}
 		});
 		
@@ -481,7 +500,9 @@ public class ProductMain extends Page{
 		PreparedStatement pstmt=null;
 		ResultSet rs=null;
 		
-		String sql="select * from product order by product_id desc";
+		String sql="select product_id, sub_name, product_name, price, brand, detail,filename";
+		sql+=" from subcategory s, product p";
+		sql+=" where s.subcategory_id=p.subcategory_id";
 		
 		try {
 			pstmt=this.getAppMain().getCon().prepareStatement(sql
@@ -499,7 +520,7 @@ public class ProductMain extends Page{
 			int index=0;
 			while(rs.next()) {
 				records[index][0]=Integer.toString(rs.getInt("product_id"));
-				records[index][1]=Integer.toString(rs.getInt("subcategory_id"));
+				records[index][1]=rs.getString("sub_name");
 				records[index][2]=rs.getString("product_name");
 				records[index][3]=Integer.toString(rs.getInt("price"));
 				records[index][4]=rs.getString("brand");
@@ -514,5 +535,114 @@ public class ProductMain extends Page{
 			this.getAppMain().release(pstmt, rs);
 		}
 	}
-	
+	//java가 기본적으로 엑셀을 제어할 수 있는 api가 지원되지 않는다. 따라서 외부의 api를 이용해야 한다 
+	//apache 개발한 라이브러리 이용해보자~
+	// http://apache.org  : 무료 소프트웨어 진영을 이끌고 있는 단체!!   POI  jar
+	public void registByExcel() {
+		//유저가 선택한 엑셀파일의 경로를 구한다!!
+		
+		String path=null;
+		
+		if(chooser.showOpenDialog(this.getAppMain()) == JFileChooser.APPROVE_OPTION) {
+			File file = chooser.getSelectedFile();//파일 정보 얻기!!
+			path = file.getAbsolutePath();
+		}else {
+			JOptionPane.showMessageDialog(this.getAppMain(), "엑셀파일을 선택해 주세요");
+			return; //이하 라인을 못지나가게..함수 호출한 곳으로 실행부를 돌려보냄..
+		}
+		
+		/*
+		 * 1) 엑셀파일에 접근부터 해야 한다!! ( 즉 빨대를 꽂아야 한다)
+		*/
+		FileInputStream fis=null;
+		XSSFWorkbook workbook=null;
+		PreparedStatement pstmt=null;
+		
+		try {
+			fis =new FileInputStream(path);
+			//이 스트림을 통해 내부데이터를 엑셀로 이해할 수 있도록 해석!!! 
+			workbook=new XSSFWorkbook(fis);//엑셀파일을 처리하기 위한 객체 XSSFWorkbook
+			
+			XSSFSheet sheet = workbook.getSheet("product");//우리가 부여한 sheet명을 이용해서 쉬트 접근!!!
+			
+			
+			//쉬트객체를 이용해서 원하는 레코드에 접근해보자!!
+			for(int i=1;i<sheet.getLastRowNum();i++) {
+				XSSFRow row = sheet.getRow(i);
+				
+				int subcategory_id=0;
+				String product_name=null;
+				int price=0;
+				String brand=null;
+				String detail=null;
+				String filename=null;
+				
+				//컬럼 수 만큼 반복
+				for(int a=0; a< row.getLastCellNum();a++) {
+					XSSFCell cell=row.getCell(a);
+					//숫자일경우, 문자열 경우 메서드가 틀리기 때문에 결국 자료형에 따라 조건으로 알맞는메서드 호출
+					if(a==0) { //subcategory_id
+						System.out.print(cell.getNumericCellValue());
+						subcategory_id=(int)cell.getNumericCellValue(); //double --> int
+					}else if(a==1) {
+						System.out.print(cell.getStringCellValue());
+						product_name=cell.getStringCellValue();
+					}else if(a==2) {
+						System.out.print(cell.getNumericCellValue());
+						price = (int)cell.getNumericCellValue(); //double --> int
+					}else if(a==3) {
+						System.out.print(cell.getStringCellValue());
+						brand = cell.getStringCellValue();
+					}else if(a==4) {
+						System.out.print(cell.getStringCellValue());
+						detail=cell.getStringCellValue();
+					}else if(a==5) {
+						System.out.print(cell.getStringCellValue());
+						filename=cell.getStringCellValue();
+					}
+				}
+				System.out.println(""); //줄바꿈
+				
+				String sql="insert into product(subcategory_id,product_name,price,brand,detail,filename)";
+				sql+=" values(?,?,?,?,?,?)";
+				
+				Connection con=this.getAppMain().getCon();
+				//con.setAutoCommit(false);//자동 커밋 하지마라!!! 즉 커밋은 내가주도해서 하겠다!!
+				//con.setAutoCommit(true);//매 DML마다 무조건 commit해라!!
+				
+				pstmt=this.getAppMain().getCon().prepareStatement(sql);
+				pstmt.setInt(1, subcategory_id);
+				pstmt.setString(2, product_name);
+				pstmt.setInt(3, price);
+				pstmt.setString(4, brand);
+				pstmt.setString(5, detail);
+				pstmt.setString(6, filename);
+				
+				//쿼리실행 
+				int result = pstmt.executeUpdate(); 
+				
+			}//바깥for
+
+			JOptionPane.showMessageDialog(this.getAppMain(), "등록완료");
+			getProductList();
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			if(fis!=null) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if(pstmt!=null) {
+				this.getAppMain().release(pstmt);
+			}
+		}
+	}
 }
