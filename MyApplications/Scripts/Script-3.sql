@@ -9,3 +9,5 @@ create table shoppingapp.product (
 	, detail text
 	, filename varchar(40)
 ) default character set utf8;
+
+select  * from shoppingapp.product whrere prduct_name like
