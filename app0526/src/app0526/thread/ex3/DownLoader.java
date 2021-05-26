@@ -96,7 +96,7 @@ public class DownLoader extends JFrame{
 			long time = System.currentTimeMillis();
 			String ext = FileManager.getExtend(t_url.getText(), "/");
 			String filename=time+"."+ext;
-			fos=new FileOutputStream("D:\\korea202102_javaworkspace\\app0526\\data\\"+filename); //파일명 결정
+			fos=new FileOutputStream("D:\\workspace\\korea202102_javaworkspace\\app0526\\data\\"+filename); //파일명 결정
 			
 			int data=-1;
 			int count=0;
@@ -145,6 +145,8 @@ public class DownLoader extends JFrame{
 		
 	}
 }
+
+
 
 
 
