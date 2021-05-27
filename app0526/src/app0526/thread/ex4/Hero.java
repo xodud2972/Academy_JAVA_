@@ -1,9 +1,6 @@
 package app0526.thread.ex4;
 
 import java.awt.Graphics;
-import java.awt.Image;
-
-import javax.swing.ImageIcon;
 
 //주인공을 정의한다!!
 public class Hero extends GameObject{
