@@ -48,7 +48,7 @@ public class ChatServer extends JFrame implements ActionListener{
 		
 		//view
 		setVisible(true);
-		setSize(400, 500);
+		setBounds(2700, 100, 300, 400);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 	
@@ -122,3 +122,5 @@ public class ChatServer extends JFrame implements ActionListener{
 	}
 
 }
+
+

@@ -32,6 +32,7 @@ public class ChatClient extends JFrame implements ActionListener{
 	Socket socket;//서버와의 통신을 위한 대화용 소켓
 	BufferedReader buffr=null; //서버로부터 전송되어온 메시지를 입력받을 수 있는 용도의 스트림
 	BufferedWriter buffw=null; //서버에 메시지를 전송할 수 있는 출력스트림 
+	ClientMsgThread msgThread;
 	
 	public ChatClient() {
 		p_north = new JPanel();
@@ -71,9 +72,9 @@ public class ChatClient extends JFrame implements ActionListener{
 		try {
 			socket = new Socket(ip, port); //서버에 접속 시도!!
 			
-			//접속 성공된 소켓으로부터, 스트림 뽑아놓기!!!
-			buffr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			buffw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			//클라이언트측의 대화 담당 쓰레드 생성
+			msgThread = new ClientMsgThread(socket, area);
+			msgThread.start();
 			
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -82,36 +83,13 @@ public class ChatClient extends JFrame implements ActionListener{
 		}
 	}
 	
-	//서버에 메시지 보내기!!
-	public void send() {
-		String msg = t_input.getText();
-		
-		try {
-			buffw.write(msg+"\n"); //말하고
-			buffw.flush();
-			
-			listen();//듣고
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	//서버의 메시지 받기 
-	public void listen() {
-		String msg=null;
-		try {
-			msg=buffr.readLine(); //서버가 보낸 메시지 받기!!
-			area.append(msg+"\n"); //대화 로그에 출력
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource()==bt_connect) {
 			connect();
+			
 		}else if(e.getSource() ==bt_send) {
-			send();
+			msgThread.send(t_input.getText());
 		}
 	}
 	public static void main(String[] args) {

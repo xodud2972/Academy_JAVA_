@@ -45,7 +45,7 @@ public class ChatClient extends JFrame{
 		
 		//보이기 
 		setVisible(true);
-		setSize(300, 400);
+		setBounds(2200, 100, 300, 400);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 	
@@ -55,3 +55,7 @@ public class ChatClient extends JFrame{
 	}
 
 }
+
+
+
+
