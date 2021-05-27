@@ -50,6 +50,7 @@ public class EchoServer {
 			
 			
 			
+			
 			// 서버는 듣고 말한다.
 			String data =null;
 			
