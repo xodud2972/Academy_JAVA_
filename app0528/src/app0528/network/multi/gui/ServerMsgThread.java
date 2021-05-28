@@ -13,6 +13,7 @@ public class ServerMsgThread extends Thread{
 	BufferedReader buffr;
 	BufferedWriter buffw;
 	ChatServer chatServer; //JTextArea, Vector 등 여러가지 서버측의 자원을 접근할 것이기에...통째로 서버를 보유하자!
+	boolean flag=true; //현재 쓰레드를 동작제어할 수 있는 논리값 즉  false로 두는 순간, 이 쓰레드는 dead상태가 된다!! 
 	
 	public ServerMsgThread(Socket socket, ChatServer chatServer) {
 		this.socket=socket;
@@ -39,6 +40,10 @@ public class ServerMsgThread extends Thread{
 			chatServer.area.append(msg+"\n");//서버의 로그에 남기기
 		} catch (IOException e) {
 			e.printStackTrace();
+			//대화 목록 수에서 제거!!
+			chatServer.clientList.remove(this);
+			chatServer.area.append("클라이언트 나갔슴, 현재 접속자 "+chatServer.clientList.size() +"명\n");
+			flag=false;
 		}
 	}
 	
@@ -54,7 +59,7 @@ public class ServerMsgThread extends Thread{
 	}
 
 	public void run() {
-		while(true) {
+		while(flag) {
 			listen();
 		}
 	}
