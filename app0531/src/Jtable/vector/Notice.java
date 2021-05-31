@@ -1,4 +1,4 @@
-package app0531;
+package Jtable.vector;
 
 //현실의 하나의 게시판을 DB분야에서는 Table로 정의하고, OOP에서는 class로 표현한다 
 //이때 oop개발자는 게시판의 컬럼만 봐도, oop의 클래스로 변환할 줄 알아야 함(일상업무)
