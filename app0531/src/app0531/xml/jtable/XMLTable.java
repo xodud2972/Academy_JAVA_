@@ -38,10 +38,13 @@ public class XMLTable extends JFrame{
 			URL url = this.getClass().getClassLoader().getResource("Pets.xml");
 			URI uri=url.toURI();
 			SAXParser saxParser=factory.newSAXParser();
+			System.out.println("파싱을 시작합니다");
+			PetHandler handler = null;
 			saxParser.parse(new File(uri), new PetHandler());
+			System.out.println("파싱을 종료합니다");
 			//JTable의 모델 데이터와 파싱한 결과와의 매칭은 파싱전? 파싱한 후?
 			PetModel model = new PetModel();
-			//model.data=파싱한결과의vector;
+			model.data = handler.petList;
 			table.setModel(model);
 			
 		} catch (URISyntaxException e) {
