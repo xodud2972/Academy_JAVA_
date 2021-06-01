@@ -3,10 +3,8 @@ package app0601.xml.data.table;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -28,6 +26,7 @@ public class MountainApp extends JFrame{
 	JScrollPane scroll;
 	XMLLoader loader;
 	MountainHandler handler;
+	MountainModel model;
 	
 	public MountainApp() {
 		//생성
@@ -78,7 +77,12 @@ public class MountainApp extends JFrame{
 			
 			saxParser.parse(is, handler = new MountainHandler()); //파싱시작!!!!
 			
-			
+			//이 코드 시점이, 파싱이 종료된 시점이므로 JTable이 TableModel을 사용할 시점이다
+			model=new MountainModel();
+			model.data=handler.mtList;
+			table.setModel(model); //이 시점부터 JTable은 적용된 모델로부터 각종
+											//정보를 얻어 표를 구성한다!!!!
+			table.updateUI();	
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		} catch (SAXException e) {

@@ -4,7 +4,7 @@ package app0601.xml.data.table;
 public class Mountain {
 	private String mntiadd; //산의 소재지 
 	private String mntidetails; //상세내용 
-	private int mntihigh; //산높이 
+	private String mntihigh; //산높이 
 	private int mntilistno; //산의 번호 
 	private String mntiname; //산이름 
 	
@@ -20,10 +20,10 @@ public class Mountain {
 	public void setMntidetails(String mntidetails) {
 		this.mntidetails = mntidetails;
 	}
-	public int getMntihigh() {
+	public String getMntihigh() {
 		return mntihigh;
 	}
-	public void setMntihigh(int mntihigh) {
+	public void setMntihigh(String mntihigh) {
 		this.mntihigh = mntihigh;
 	}
 	public int getMntilistno() {
@@ -38,7 +38,6 @@ public class Mountain {
 	public void setMntiname(String mntiname) {
 		this.mntiname = mntiname;
 	}
-	
 	
 	
 }

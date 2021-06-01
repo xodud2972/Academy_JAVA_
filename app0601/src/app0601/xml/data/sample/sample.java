@@ -7,13 +7,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
-public class sample {
+public class Sample {
 	
 	//try~catch: 예외를 개발자가 처리하겠다~~
 	//throws : 개발자가 해당 예외를 처리하지 않고, 메서드 호출자에게 전가시키겠다
 	//아래의 코드에서 main메서드를 호출한 자는 jvm이므로, 혹여나 예외가 발생한다면  jvm에 의해 예외처리 결과가 출력!! 
 	public static void main(String[] args) throws IOException{
-		String key="MFUCpXfinBJmN9jadsGre7tZO3jdNkMbbarXfsrlZU9hg1kvYUMHzxj2qnNzBCT2VZc52sYpJ5UyIH28ZALE6A%3D%3D";
+		String key="TPK6sq5VdCOFrijK99CmJHQCEVer9GwK4sxLvP6ED6dBExrBc6FO298QjQadJsw7C4sDZ8yBXJfsYZ%2FVT6LG0A%3D%3D";
 		
 		StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/1400000/service/cultureInfoService/mntInfoOpenAPI"); /*URL*/
         urlBuilder.append("?" + URLEncoder.encode("ServiceKey","UTF-8") + "="+key); /*Service Key*/
