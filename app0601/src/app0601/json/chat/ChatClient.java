@@ -37,7 +37,8 @@ public class ChatClient extends JFrame{
 		this.member=member; //넘겨받은 회원정보 
 		
 		p_north = new JPanel();
-		t_ip = new JTextField("121.170.118.162",13);
+		t_ip = new JTextField("192.168.55.227",10);
+		t_port = new JTextField(5);
 		bt_connect = new JButton("접속");
 		area = new JTextArea();
 		scroll = new JScrollPane(area);
@@ -103,8 +104,19 @@ public class ChatClient extends JFrame{
 		//대화 이외에 서버에 데이터를 전송할때는 어떻게 해야 하나? 
 		//서버에 보내려고 하는 데이터에 각종 의미를 부여하되, 정형적,구조화된,많이 알려진 형태의 데이터를
 		//구성하는게 좋다..
+		/*
+		{
+			"cmd":"chat", 
+			"message": "안녕"
+		}
+		*/
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		sb.append("\"cmd\":\"chat\", ");
+		sb.append("\"message\": \""+msg+"\"");
+		sb.append("}");
 		
-		msgThread.send(member.getUser_id()+" : "+msg); //서버에 메시지 전송~(출력)
+		msgThread.send(sb.toString()); //서버에 메시지 전송~(출력)
 		t_input.setText(""); //초기화
 	}
 	
@@ -112,7 +124,7 @@ public class ChatClient extends JFrame{
 	public void sendAllData() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
-		sb.append("\"cmd\" : \"login\",");
+		sb.append("\"cmd\" : \"login\",");  //cmd 요청명령을 구분하는 값!!
 		sb.append("\"member\":{");
 		sb.append("\"user_id\" :  \""+member.getUser_id()+"\",");
 		sb.append("\"name\" :\""+member.getName()+"\",");
@@ -132,7 +144,7 @@ public class ChatClient extends JFrame{
 	public void connect() {
 		//String ip=t_ip.getText();
 		//int port=Integer.parseInt(t_port.getText());
-		String ip="192.168.55.227";
+		String ip="172.30.1.20";
 		int port=7777;
 		
 		try {
