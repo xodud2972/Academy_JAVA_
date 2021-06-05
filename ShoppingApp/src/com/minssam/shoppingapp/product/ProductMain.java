@@ -107,6 +107,14 @@ public class ProductMain extends Page{
 	int product_id; // 현재 상세보기 중인 product의 pk
 	String del_file; //현재 상세보기 중인 filename(삭제 대상이 될 수 있슴)
 	
+	//데이터베스 관련 
+	String driver="com.mysql.jdbc.Driver"; // 8.xx 인 경우 com.mysql.jdbc.cj.Driver
+	String url="jdbc:mysql://localhost:3306/project1?characterEncoding=UTF-8";
+	String user="root";
+	String password="1234";
+	private Connection con;
+	
+	
 	public ProductMain(AppMain appMain) {
 		super(appMain);
 		setBackground(Color.YELLOW);
